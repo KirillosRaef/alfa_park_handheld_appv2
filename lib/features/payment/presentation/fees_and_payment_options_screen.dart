@@ -4,6 +4,7 @@ import 'package:alfa_park_handheld_appv2/core/theme/colors.dart';
 import 'package:alfa_park_handheld_appv2/features/payment/application/payment_service.dart';
 import 'package:alfa_park_handheld_appv2/router/router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FeesAndPaymentOptionsScreen extends ConsumerStatefulWidget {
@@ -16,6 +17,7 @@ class FeesAndPaymentOptionsScreen extends ConsumerStatefulWidget {
 
 class _FeesAndPaymentOptionsScreenState
     extends ConsumerState<FeesAndPaymentOptionsScreen> {
+  static const platform = MethodChannel("com.example.alfa_park_handheld_appv2");
   //final _paymentAmountController = TextEditingController();
   final _cardNumberController = TextEditingController();
   final _cardHolderNameController = TextEditingController();
@@ -31,6 +33,16 @@ class _FeesAndPaymentOptionsScreenState
     _expiryDateController.dispose();
     _cvvController.dispose();
     super.dispose();
+  }
+
+  Future<void> _sayHello() async {
+    try {
+      String a = await platform.invokeMethod("sayHello");
+      print(a);
+    } on PlatformException catch (e) {
+      // ignore: avoid_print
+      print("Failed to invoke: '${e.message}'.");
+    }
   }
 
   // void _showNumberPad() {
@@ -141,8 +153,16 @@ class _FeesAndPaymentOptionsScreenState
                       ],
                       buttonText: "Pay",
                       onPressed: () async {
+                        //await platform.invokeMethod("sayHello");
                         if (_formKey.currentState!.validate()) {
-                          await ref.read(paymentServiceProvider).payWithCredit();
+                          try {
+                            _sayHello();
+                          } on PlatformException catch (e) {
+                            print("Failed to invoke: '${e.message}'.");
+                          }
+                          await ref
+                              .read(paymentServiceProvider)
+                              .payWithCredit();
                           Navigator.pushNamed(
                               context, AppRoute.homeScreen.name);
                         }
@@ -161,9 +181,7 @@ class _FeesAndPaymentOptionsScreenState
                         if (_formKey.currentState!.validate()) {
                           await Navigator.pushNamed(
                               context, AppRoute.discountScreen.name);
-                          setState(() {
-                            
-                          });
+                          setState(() {});
                         }
                       },
                     ),
